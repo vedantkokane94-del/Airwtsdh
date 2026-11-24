@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI ARENA – The Ultimate AI Ready Quiz | T.S.D.H. SVIT Nashik</title>
+  
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#060913">
+  <meta name="description" content="AI ARENA – The Ultimate AI Ready Quiz (Think. Prompt. Prove.) Organised by T.S.D.H., SVIT Nashik">
+  <link rel="icon" type="image/png" href="assets/robot-mascot.png">
+
+  <!-- Google Fonts: Poppins (UI) & Playfair Display (Headings) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN with Esports Brand Theme -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            arena: {
+              bg: '#060913',
+              card: 'rgba(15, 23, 46, 0.75)',
+              border: 'rgba(47, 109, 240, 0.28)',
+              navy: '#0b1022',
+              royal: '#1e3a8a',
+              blue: '#2f6df0',
+              cyan: '#06b6d4',
+              indigo: '#4f2fd8',
+              violet: '#8b5cf6',
+              gold: '#d9a63a',
+              'gold-light': '#f5d57f'
+            }
+          },
+          fontFamily: {
+            sans: ['Poppins', 'system-ui', 'sans-serif'],
+            heading: ['"Playfair Display"', 'Georgia', 'serif']
+          },
+          animation: {
+            'glow-pulse': 'glowPulse 3s infinite ease-in-out',
+            'float': 'floating 4s infinite ease-in-out',
+            'spin-slow': 'spin 12s linear infinite',
+            'border-shine': 'borderShine 4s linear infinite',
+          },
+          keyframes: {
+            glowPulse: {
+              '0%, 100%': { filter: 'drop-shadow(0 0 15px rgba(47, 109, 240, 0.6))' },
+              '50%': { filter: 'drop-shadow(0 0 30px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 10px rgba(217, 166, 58, 0.5))' }
+            },
+            floating: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- External Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #060913;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(to bottom, #4f2fd8, #2f6df0);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d9a63a;
+    }
+
+    /* Ambient Neural Grid Mesh */
+    .neural-grid {
+      background-size: 40px 40px;
+      background-image: 
+        linear-gradient(to right, rgba(47, 109, 240, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(47, 109, 240, 0.05) 1px, transparent 1px);
+    }
+
+    /* Glassmorphism Classes */
+    .glass-panel {
+      background: rgba(15, 23, 46, 0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(47, 109, 240, 0.25);
+    }
+    .glass-panel:hover {
+      border-color: rgba(47, 109, 240, 0.45);
+    }
+    .glass-gold {
+      background: rgba(217, 166, 58, 0.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(217, 166, 58, 0.35);
+    }
+    
+    /* Neon Text Gradient */
+    .text-glow-gold {
+      text-shadow: 0 0 20px rgba(217, 166, 58, 0.45);
+    }
+    .text-glow-blue {
+      text-shadow: 0 0 25px rgba(47, 109, 240, 0.6);
+    }
+    /* Complete suppression of browser autofill ghost text & backgrounds */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px #060913 inset !important;
+      -webkit-text-fill-color: #ffffff !important;
+      caret-color: #ffffff !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+  </style>
+</head>
+<body class="bg-[#060913] text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden neural-grid">
+
+  <!-- Interactive Floating Background Particles Canvas -->
+  <canvas id="neural-bg-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+  <!-- Network Offline Banner -->
+  <div id="offline-banner" class="hidden bg-amber-500 text-slate-950 px-4 py-2 text-center text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 sticky top-0 z-50 shadow-lg">
+    <i data-lucide="wifi-off" class="w-4 h-4"></i>
+    <span>You are offline. Your answers are safely cached locally and will sync when restored.</span>
+  </div>
+
+  <!-- Realtime Announcement Banner Container -->
+  <div id="announcement-banner-root" class="relative z-30"></div>
+
+  <!-- Main Esports Navigation Bar -->
+  <header id="navbar-root" class="sticky top-0 z-40 bg-[#060913]/85 backdrop-blur-xl border-b border-blue-500/20 transition-all"></header>
+
+  <!-- Main Application Body -->
+  <main id="app" class="flex-1 w-full max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 relative z-10"></main>
+
+  <!-- Esports Footer -->
+  <footer class="mt-auto py-8 border-t border-blue-500/20 bg-[#04060d] text-xs text-slate-400 relative z-20">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+      <!-- Logos & Title -->
+      <div class="flex items-center gap-3">
+        <img src="assets/tsdh-logo.jpg" alt="TSDH SVIT Logo" class="w-10 h-10 rounded-full border border-blue-500/40 object-cover shadow-md">
+        <img src="assets/robot-mascot.png" alt="Robot Mascot" class="w-9 h-9 rounded-full border border-amber-400/40 object-cover shadow-md">
+        <div>
+          <div class="font-extrabold text-white text-sm tracking-wide flex items-center gap-2">
+            <span>AI ARENA</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-950 text-blue-300 border border-blue-500/40 font-mono">2026</span>
+          </div>
+          <div class="text-[11px] text-slate-400">Technical Skill Development Hub (T.S.D.H.) • SVIT Nashik</div>
+        </div>
+      </div>
+
+      <!-- Tagline & Pravara Link -->
+      <div class="text-xs text-slate-400">
+        <div class="font-semibold text-[#f5d57f]">THINK. PROMPT. PROVE.</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">Pravara Rural Education Society • Sir Visvesvaraya Institute of Technology</div>
+      </div>
+
+      <!-- Links -->
+      <div class="flex items-center gap-4 text-xs font-medium">
+        <a href="#rules" id="footer-rules-link" class="text-slate-300 hover:text-[#d9a63a] transition-colors">Exam Rules</a>
+        <span class="text-slate-700">|</span>
+        <span class="text-emerald-400 flex items-center gap-1 font-mono text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          ARENA LIVE
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal Container -->
+  <div id="modal-root" class="relative z-50"></div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Animated Neural Canvas Script -->
+  <script>
+    (function initNeuralCanvas() {
+      const canvas = document.getElementById('neural-bg-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      let particles = [];
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * width;
+          this.y = Math.random() * height;
+          this.vx = (Math.random() - 0.5) * 0.6;
+          this.vy = (Math.random() - 0.5) * 0.6;
+          this.radius = Math.random() * 2 + 1;
+          this.color = Math.random() > 0.4 ? 'rgba(47, 109, 240, ' : 'rgba(217, 166, 58, ';
+          this.alpha = Math.random() * 0.5 + 0.2;
+        }
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          if (this.x < 0 || this.x > width) this.vx *= -1;
+          if (this.y < 0 || this.y > height) this.vy *= -1;
+        }
+        draw() {
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + this.alpha + ')';
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < 45; i++) {
+        particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Draw connections
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(47, 109, 240, ${0.15 * (1 - dist / 120)})`;
+              ctx.lineWidth = 0.8;
+              ctx.stroke();
+            }
+          }
+          particles[i].update();
+          particles[i].draw();
+        }
+        requestAnimationFrame(animate);
+      }
+      animate();
+    })();
+  </script>
+
+  <!-- Cache Invalidation & Fresh State -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(registrations => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+    if ('caches' in window) {
+      caches.keys().then(names => {
+        for (let name of names) caches.delete(name);
+      });
+    }
+  </script>
+
+  <!-- Main Orchestrator -->
+  <script type="module" src="./src/app.js?v=2026_clean_blank_auth"></script>
+</body>
+</html>
